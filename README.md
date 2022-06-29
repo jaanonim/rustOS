@@ -5,5 +5,5 @@ My try to write operating system in rust. Based on [this](https://os.phil-opp.co
 ## Build
 
 ```
-cargo build --target thumbv7em-none-eabihf
+cargo build --target x86_64.json
 ```
