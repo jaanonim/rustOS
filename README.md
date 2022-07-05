@@ -10,4 +10,4 @@ cargo build --target x86_64.json
 
 ## Status
 
-https://os.phil-opp.com/testing/#future-tests
+https://os.phil-opp.com/double-fault-exceptions/https://os.phil-opp.com/double-fault-exceptions/
