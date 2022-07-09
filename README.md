@@ -10,4 +10,4 @@ cargo build --target x86_64.json
 
 ## Status
 
-https://os.phil-opp.com/heap-allocation/
+https://os.phil-opp.com/allocator-designs/
