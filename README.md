@@ -10,4 +10,4 @@ cargo build --target x86_64.json
 
 ## Status
 
-https://os.phil-opp.com/allocator-designs/
+https://os.phil-opp.com/async-await/
