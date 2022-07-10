@@ -7,7 +7,9 @@
 #![feature(alloc_error_handler)]
 #![feature(const_mut_refs)]
 
+use bootloader::BootInfo;
 use core::panic::PanicInfo;
+use x86_64::VirtAddr;
 
 pub mod allocator;
 pub mod gdt;
@@ -16,11 +18,20 @@ pub mod memory;
 pub mod serial;
 pub mod vga_buffer;
 
-pub fn init() {
+extern crate alloc;
+
+pub fn init(boot_info: &'static BootInfo) {
     gdt::init();
     interrupts::init_idt();
     unsafe { interrupts::PICS.lock().initialize() };
     x86_64::instructions::interrupts::enable();
+
+    let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
+    let mut mapper = unsafe { memory::init(phys_mem_offset) };
+    let mut frame_allocator =
+        unsafe { memory::BootInfoFrameAllocator::init(&boot_info.memory_map) };
+
+    allocator::init_heap(&mut mapper, &mut frame_allocator).expect("heap initialization failed");
 }
 
 pub fn hlt_loop() -> ! {
@@ -28,8 +39,6 @@ pub fn hlt_loop() -> ! {
         x86_64::instructions::hlt();
     }
 }
-
-extern crate alloc;
 
 #[alloc_error_handler]
 fn alloc_error_handler(layout: alloc::alloc::Layout) -> ! {
@@ -67,7 +76,7 @@ pub fn test_panic_handler(info: &PanicInfo) -> ! {
 }
 
 #[cfg(test)]
-use bootloader::{entry_point, BootInfo};
+use bootloader::entry_point;
 
 #[cfg(test)]
 entry_point!(test_kernel_main);
@@ -75,8 +84,8 @@ entry_point!(test_kernel_main);
 /// Entry point for `cargo test`
 #[cfg(test)]
 #[no_mangle]
-fn test_kernel_main(_boot_info: &'static BootInfo) -> ! {
-    init();
+fn test_kernel_main(boot_info: &'static BootInfo) -> ! {
+    init(boot_info);
     test_main();
     hlt_loop();
 }
